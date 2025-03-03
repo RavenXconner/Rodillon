@@ -1,0 +1,102 @@
+Adding Users:
+from django.contrib.auth.models import User
+users = [
+    {"username": "john", "email": "john@example.com"},
+    {"username": "jane", "email": "jane@example.com"},
+    {"username": "mike", "email": "mike@example.com"},
+    {"username": "lucy", "email": "lucy@example.com"},
+    {"username": "alex", "email": "alex@example.com"},
+]
+
+for user in users:
+    User.objects.create_user(username=user["username"], email=user["email"], password="password123")
+
+Adding Vehicles:
+from javy.models import Vehicle
+
+vehicle1 = Vehicle.objects.create(
+    make='Toyota',
+    model='Camry',
+    vehicle_type='Sedan',
+    fuel_type='Petrol',
+    price_per_day=50.00,
+    is_available=True
+)
+
+vehicle2 = Vehicle.objects.create(
+    make='Tesla',
+    model='Model S',
+    vehicle_type='Luxury',
+    fuel_type='Electric',
+    price_per_day=150.00,
+    is_available=True
+)
+
+vehicle3 = Vehicle.objects.create(
+    make='Ford',
+    model='Explorer',
+    vehicle_type='SUV',
+    fuel_type='Diesel',
+    price_per_day=75.00,
+    is_available=True
+)
+
+
+vehicles = Vehicle.objects.all()
+for vehicle in vehicles:
+    print(vehicle.make, vehicle.model, vehicle.vehicle_type)
+
+
+Adding Bookings (10 total, 8 successful payments, 2 failed):
+from javy.models import Booking
+from django.contrib.auth.models import User
+from datetime import datetime
+
+user = User.objects.get(username='alex')
+vehicle_camry = Vehicle.objects.get(make='Toyota', model='Camry')
+
+pickup_date = datetime(2025, 3, 15, 10, 0)
+dropoff_date = datetime(2025, 3, 20, 10, 0)
+location = "Tokyo Airport"
+total_price = vehicle_camry.price_per_day * 5
+
+for i in range(8):
+    Booking.objects.create(
+        user=user,
+        vehicle=vehicle_camry,
+        pickup_date=pickup_date,
+        dropoff_date=dropoff_date,
+        location=location,
+        total_price=total_price,
+        payment_status='Successful'
+    )
+
+for i in range(2):
+    Booking.objects.create(
+        user=user,
+        vehicle=vehicle_camry,
+        pickup_date=pickup_date,
+        dropoff_date=dropoff_date,
+        location=location,
+        total_price=total_price,
+        payment_status='Failed'
+    )
+
+
+Filter Bookings by Successful and Failed Payments:
+
+successful_bookings = Booking.objects.filter(payment_status='Successful')
+for booking in successful_bookings:
+    print(f"Booking ID: {booking.id}, User: {booking.user.username}, Vehicle: {booking.vehicle}, Payment Status: {booking.payment_status}")
+
+failed_bookings = Booking.objects.filter(payment_status='Failed')
+for booking in failed_bookings:
+    print(f"Booking ID: {booking.id}, User: {booking.user.username}, Vehicle: {booking.vehicle}, Payment Status: {booking.payment_status}")
+
+
+Get Average Sales from Successful Bookings:
+from django.db.models import Avg
+
+average_sales = Booking.objects.filter(payment_status='Successful').aggregate(Avg('total_price'))
+print(f"Average Sales from Successful Bookings: {average_sales['total_price__avg']}")
+
